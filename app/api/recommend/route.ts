@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Recommendation error:', error)
+    const message = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: '추천 데이터를 가져오는 중 오류가 발생했습니다.' },
+      { error: '추천 데이터를 가져오는 중 오류가 발생했습니다.', detail: message },
       { status: 500 }
     )
   }
