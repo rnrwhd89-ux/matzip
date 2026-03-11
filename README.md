@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍽️ TrueScore - 진짜 현지 맛집 검색
 
-## Getting Started
+> 베이즈 평균 알고리즘으로 관광객 함정을 피하고, 통계적으로 신뢰도 높은 현지 맛집 TOP 10을 추천합니다.
 
-First, run the development server:
+## 알고리즘
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+S_opt = α × (C×m + N×R) / (C+N) − β×σ + γ×L
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **R**: 평균 평점 | **N**: 리뷰 수 | **σ**: 표준편차 | **L**: 현지인 리뷰 비율
+- 자세한 내용: [`docs/algorithm.md`](./docs/algorithm.md)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> `docs/algorithm.md`가 Claude AI 시스템 프롬프트로 직접 사용됩니다.
+> 알고리즘을 수정하려면 이 파일만 편집하면 됩니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 기술 스택
 
-## Learn More
+- **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- **AI**: Claude API (`claude-sonnet-4-6`)
+- **배포**: Vercel
 
-To learn more about Next.js, take a look at the following resources:
+## 로컬 실행
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# 1. 의존성 설치
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 2. 환경변수 설정
+cp .env.local.example .env.local
+# .env.local 파일에 ANTHROPIC_API_KEY 입력
 
-## Deploy on Vercel
+# 3. 개발 서버 실행
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`http://localhost:3000` 접속 후 지역명 검색
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Vercel 배포
+
+1. GitHub에 Push
+2. [Vercel](https://vercel.com)에서 레포 Import
+3. Environment Variables에 `ANTHROPIC_API_KEY` 추가
+4. Deploy
+
+## 파일 구조
+
+```
+matzip/
+├── app/
+│   ├── page.tsx              # 홈 (Hero + 검색창)
+│   ├── search/page.tsx       # 검색 결과
+│   └── api/recommend/        # Claude API 라우트
+├── components/               # UI 컴포넌트
+├── lib/claude.ts             # Claude 클라이언트
+├── types/restaurant.ts       # 타입 정의
+└── docs/algorithm.md         # 알고리즘 문서 (= AI 프롬프트)
+```
