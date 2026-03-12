@@ -4,6 +4,7 @@
  * 사용법:
  *   npx tsx scripts/compare-algorithms.ts
  *   npx tsx scripts/compare-algorithms.ts --region "상도동 성대시장"
+ *   npx tsx scripts/compare-algorithms.ts --data scripts/places-data.json --region "상도동"
  *
  * Algorithm A (현재): Bayesian Average
  *   S_opt = α × ((C×m + N×R) / (C+N)) − β×σ + γ×L
@@ -11,6 +12,8 @@
  * Algorithm B (신규 제안): Log Penalty
  *   S_final = R - k / log10(N+1)
  */
+
+import fs from 'fs'
 
 // ─────────────────────────────────────────────
 // 타입 정의
@@ -114,7 +117,44 @@ function run() {
   const regionIdx = args.indexOf('--region')
   const region = regionIdx !== -1 ? args[regionIdx + 1] : '상도동 성대시장'
 
-  const regionAvg = SAMPLE_DATA.reduce((sum, r) => sum + r.R, 0) / SAMPLE_DATA.length
+  // --data 플래그: JSON 파일에서 데이터 로드 (fetch-places.ts 결과)
+  const dataIdx = args.indexOf('--data')
+  let data: Restaurant[] = SAMPLE_DATA
+  if (dataIdx !== -1) {
+    const dataFile = args[dataIdx + 1]
+    const raw = fs.readFileSync(dataFile, 'utf-8')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parsed: any[] = JSON.parse(raw)
+
+    // R 또는 N이 null인 항목 걸러내고 경고
+    const incomplete = parsed.filter(p => p.R === null || p.N === null)
+    if (incomplete.length > 0) {
+      console.warn(`\n⚠️  R·N 미입력 항목 ${incomplete.length}개가 제외됩니다:`)
+      incomplete.forEach((p: { name: string }) => console.warn(`   - ${p.name}`))
+    }
+
+    data = parsed
+      .filter(p => p.R !== null && p.N !== null)
+      .map(p => ({
+        name:        p.name,
+        category:    p.category,
+        R:           Number(p.R),
+        N:           Number(p.N),
+        sigma:       p.sigma ?? 0.5,
+        L:           p.L    ?? 0.7,
+        isFranchise: p.isFranchise ?? false,
+        note:        p.note,
+      }))
+
+    if (data.length === 0) {
+      console.error('\n❌ R·N이 입력된 식당이 없습니다. places-data.json 을 먼저 채워주세요.')
+      process.exit(1)
+    }
+
+    console.log(`\n📂 데이터 파일 로드: ${dataFile} (${data.length}개)`)
+  }
+
+  const regionAvg = data.reduce((sum, r) => sum + r.R, 0) / data.length
 
   console.log('\n' + '═'.repeat(72))
   console.log(`  알고리즘 비교 테스트 — 대상 지역: ${region}`)
@@ -126,7 +166,7 @@ function run() {
   console.log('═'.repeat(72))
 
   // 점수 계산
-  const scored: ScoredRestaurant[] = SAMPLE_DATA.map(r => ({
+  const scored: ScoredRestaurant[] = data.map(r => ({
     ...r,
     scoreA: algorithmA(r, regionAvg),
     scoreB: algorithmB(r),
@@ -258,7 +298,12 @@ function run() {
   })
 
   console.log()
-  console.log('  💡 SAMPLE_DATA 배열을 수정하여 실제 데이터로 테스트하세요.')
+  if (dataIdx !== -1) {
+    console.log('  💡 places-data.json 의 R·N 값을 수정하면 결과가 달라집니다.')
+  } else {
+    console.log('  💡 SAMPLE_DATA 배열을 수정하거나 --data 플래그로 실제 데이터를 사용하세요.')
+    console.log('  💡 실제 테스트: npx tsx scripts/fetch-places.ts --region "지역명"')
+  }
   console.log('═'.repeat(72))
   console.log()
 }
