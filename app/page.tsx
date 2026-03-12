@@ -35,8 +35,8 @@ export default function HomePage() {
       </nav>
 
       {/* 히어로 섹션 */}
-      <section className="flex-1 flex flex-col items-center justify-center px-6 py-20">
-        <div className="text-center mb-10">
+      <section className="flex-1 flex flex-col items-center justify-center px-6 py-12 md:py-20">
+        <div className="text-center mb-6 md:mb-10">
           <div className="inline-flex items-center gap-2 bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 rounded-full px-4 py-1.5 mb-6">
             <span className="text-[#FF6B6B] text-xs font-semibold">✅ 현지인이 실제로 가는 맛집만</span>
           </div>
@@ -62,9 +62,9 @@ export default function HomePage() {
       </section>
 
       {/* 신뢰 지표 섹션 */}
-      <section className="px-6 py-16 bg-[#080810]">
+      <section className="px-6 py-10 md:py-16 bg-[#080810]">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 md:mb-10">
             <h2 className="text-white text-2xl font-bold mb-2">
               어떻게 고르나요?
             </h2>

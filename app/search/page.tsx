@@ -110,7 +110,7 @@ export default function SearchPage() {
       </nav>
 
       {/* 결과 — useSearchParams는 Suspense 내부에서만 사용 */}
-      <section className="flex-1 px-6 py-10">
+      <section className="flex-1 px-4 md:px-6 py-6 md:py-10">
         <Suspense fallback={<LoadingState region="" />}>
           <SearchContent />
         </Suspense>

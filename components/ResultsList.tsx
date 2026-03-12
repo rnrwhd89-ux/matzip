@@ -8,9 +8,9 @@ export default function ResultsList({ data }: { data: RecommendResponse }) {
   return (
     <div className="w-full max-w-5xl mx-auto">
       {/* 지역명 헤더 */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-5 md:mb-8">
         <p className="text-gray-400 text-sm mb-1">통계 기반 맛집 알고리즘 분석 결과</p>
-        <h2 className="text-white text-3xl font-bold">
+        <h2 className="text-white text-2xl md:text-3xl font-bold">
           <span className="text-[#FF6B6B]">{data.region}</span> 맛집 TOP 10
         </h2>
         <p className="text-gray-500 text-sm mt-2">
