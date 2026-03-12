@@ -19,7 +19,10 @@ function ScoreBadge({ label, value, unit = '' }: { label: string; value: number 
 }
 
 export default function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
-  const { rank, name, category, data_summary, algorithm_reason, local_features } = restaurant
+  const { rank, name, category, address, naver_link, data_summary, algorithm_reason, local_features } = restaurant
+
+  const kakaoUrl = naver_link || `https://map.kakao.com/?q=${encodeURIComponent(name)}`
+  const naverUrl = `https://map.naver.com/v5/search/${encodeURIComponent([name, address].filter(Boolean).join(' '))}`
   const badge = RANK_BADGES[rank]
   const isTop3 = rank <= 3
 
@@ -76,6 +79,28 @@ export default function RestaurantCard({ restaurant }: { restaurant: Restaurant 
           <span>💡</span> 현지인 평가 특징
         </p>
         <p className="text-gray-300 text-sm leading-relaxed">{local_features}</p>
+      </div>
+
+      {/* 지도 버튼 */}
+      <div className="mt-4 pt-4 border-t border-white/10 flex gap-2">
+        <a
+          href={kakaoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 text-center text-xs font-semibold rounded-lg bg-[#FEE500] text-black hover:bg-[#FDD835] transition-colors"
+          onClick={e => e.stopPropagation()}
+        >
+          카카오지도
+        </a>
+        <a
+          href={naverUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 text-center text-xs font-semibold rounded-lg bg-[#03C75A] text-white hover:bg-[#02b350] transition-colors"
+          onClick={e => e.stopPropagation()}
+        >
+          네이버지도
+        </a>
       </div>
     </div>
   )
