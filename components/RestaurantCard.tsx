@@ -28,7 +28,7 @@ export default function RestaurantCard({ restaurant }: { restaurant: Restaurant 
 
   return (
     <div
-      className={`rounded-2xl border p-5 transition-all duration-200 hover:border-[#FF6B6B]/50 hover:shadow-lg hover:shadow-[#FF6B6B]/5 ${
+      className={`rounded-2xl border p-4 md:p-5 transition-all duration-200 hover:border-[#FF6B6B]/50 hover:shadow-lg hover:shadow-[#FF6B6B]/5 ${
         isTop3
           ? 'bg-gradient-to-br from-[#1A1A2E] to-[#1a0d0d] border-[#FF6B6B]/40'
           : 'bg-[#1A1A2E] border-white/5'

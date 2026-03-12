@@ -28,7 +28,7 @@ export default function SearchForm({ defaultValue = '' }: { defaultValue?: strin
         <button
           type="submit"
           disabled={!region.trim()}
-          className="bg-[#FF6B6B] hover:bg-[#FF5252] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap"
+          className="bg-[#FF6B6B] hover:bg-[#FF5252] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-4 md:px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap"
         >
           분석하기
         </button>
