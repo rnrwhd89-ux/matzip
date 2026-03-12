@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { searchNaverPlaces } from '@/lib/naver'
-import { analyzeWithGemini, analyzeWithGeminiOnly } from '@/lib/gemini'
+import { searchKakaoPlaces } from '@/lib/kakao'
+import { analyzeWithKakao, analyzeWithGemini, analyzeWithGeminiOnly } from '@/lib/gemini'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,15 +12,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '지역명을 입력해주세요.' }, { status: 400 })
     }
 
+    const hasKakaoKey = !!process.env.KAKAO_REST_API_KEY
     const hasNaverKey = !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET)
 
     let data
-    if (hasNaverKey) {
-      // 네이버 API로 실제 맛집 목록 조회 → Gemini로 분석
+    if (hasKakaoKey) {
+      // 1순위: 카카오 API + Gemini 분석
+      const places = await searchKakaoPlaces(region.trim())
+      data = await analyzeWithKakao(region.trim(), places)
+    } else if (hasNaverKey) {
+      // 2순위: 네이버 API + Gemini 분석
       const places = await searchNaverPlaces(region.trim())
       data = await analyzeWithGemini(region.trim(), places)
     } else {
-      // 네이버 API 키 없으면 Gemini 단독 분석 (fallback)
+      // 3순위: Gemini 단독 (fallback)
       data = await analyzeWithGeminiOnly(region.trim())
     }
 
