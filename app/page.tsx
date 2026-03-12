@@ -1,24 +1,19 @@
 import SearchForm from '@/components/SearchForm'
 
-function AlgorithmCard({
+function TrustCard({
   icon,
   title,
-  variable,
   desc,
 }: {
   icon: string
   title: string
-  variable: string
   desc: string
 }) {
   return (
     <div className="bg-[#1A1A2E] border border-white/5 rounded-2xl p-5 hover:border-[#FF6B6B]/30 transition-colors">
       <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">{icon}</span>
-        <div>
-          <span className="text-[#FF6B6B] font-bold text-sm font-mono">{variable}</span>
-          <p className="text-white font-semibold text-sm">{title}</p>
-        </div>
+        <p className="text-white font-semibold text-sm">{title}</p>
       </div>
       <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
     </div>
@@ -43,7 +38,7 @@ export default function HomePage() {
       <section className="flex-1 flex flex-col items-center justify-center px-6 py-20">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-[#FF6B6B] text-xs font-semibold">📊 베이즈 평균 알고리즘 적용</span>
+            <span className="text-[#FF6B6B] text-xs font-semibold">✅ 현지인이 실제로 가는 맛집만</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4">
             진짜 현지 맛집만
@@ -66,57 +61,39 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* 알고리즘 설명 */}
+      {/* 신뢰 지표 섹션 */}
       <section className="px-6 py-16 bg-[#080810]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-white text-2xl font-bold mb-2">
-              어떤 알고리즘을 사용하나요?
+              어떻게 고르나요?
             </h2>
             <p className="text-gray-400 text-sm">
-              S<sub>opt</sub> = α × Bayesian Average − β×σ + γ×L
+              단순 평점순이 아닌, 진짜 신뢰할 수 있는 기준으로만 선별합니다
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <AlgorithmCard
+            <TrustCard
               icon="⭐"
-              variable="R (Rating)"
-              title="평균 평점"
-              desc="단순 평균 평점입니다. 하지만 이것만으로는 리뷰 수가 적은 식당이 왜곡될 수 있어 베이즈 평균으로 보정합니다."
+              title="평점 신뢰도"
+              desc="리뷰가 적은 식당의 높은 평점은 걸러냅니다. 충분한 리뷰가 쌓인 곳만 신뢰합니다."
             />
-            <AlgorithmCard
-              icon="📝"
-              variable="N (Reviews)"
+            <TrustCard
+              icon="💬"
               title="리뷰 수"
-              desc="리뷰가 적을수록 지역 평균에 수렴시킵니다. 리뷰가 많을수록 실제 평점을 신뢰합니다."
+              desc="리뷰가 많을수록 우연이 아닌 실력입니다. 꾸준히 사랑받는 곳을 우선합니다."
             />
-            <AlgorithmCard
-              icon="📉"
-              variable="σ (Std Dev)"
-              title="표준편차"
-              desc="평점이 1점과 5점으로 극단적으로 갈리면 패널티를 줍니다. 일관된 긍정 평가가 핵심입니다."
+            <TrustCard
+              icon="📊"
+              title="평가 일관성"
+              desc="극단적으로 호불호가 갈리는 곳은 제외합니다. 대부분의 손님이 만족한 곳을 추천합니다."
             />
-            <AlgorithmCard
+            <TrustCard
               icon="🏠"
-              variable="L (Local)"
-              title="로컬 지수"
-              desc="현지 언어 리뷰 비율입니다. 현지인이 자주 찾는 곳일수록 Tourist Trap이 아닙니다."
+              title="현지인 추천"
+              desc="관광객보다 현지인이 자주 찾는 곳을 우선합니다. Tourist Trap을 자동으로 걸러냅니다."
             />
-          </div>
-
-          {/* 공식 박스 */}
-          <div className="mt-8 bg-[#1A1A2E] border border-[#FF6B6B]/20 rounded-2xl p-6 text-center">
-            <p className="text-gray-400 text-sm mb-3">최종 점수 공식</p>
-            <p className="text-white font-mono text-lg md:text-xl">
-              S<sub className="text-[#FF6B6B]">opt</sub> = α ×{' '}
-              <span className="text-[#FF6B6B]">(C·m + N·R) / (C+N)</span>
-              {' '}−{' '}
-              <span className="text-yellow-400">β·σ</span>
-              {' '}+{' '}
-              <span className="text-green-400">γ·L</span>
-            </p>
-            <p className="text-gray-500 text-xs mt-3">α=1.0 · β=0.3 · γ=0.5 · C=50 (최소 유효 리뷰 수)</p>
           </div>
         </div>
       </section>
@@ -125,7 +102,7 @@ export default function HomePage() {
       <footer className="px-6 py-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-gray-600 text-sm">
-            © 2026 TrueScore · 베이즈 평균 기반 맛집 알고리즘
+            © 2026 TrueScore · 진짜 현지 맛집 검색
           </p>
         </div>
       </footer>
