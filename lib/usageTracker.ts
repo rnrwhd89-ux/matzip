@@ -8,10 +8,9 @@
  *   Gemini    : 무료 1,500/일 → 제한 200/일
  *   Groq      : 무료 14,400/일 → 제한 500/일
  *   Kakao     : 무료 300,000/일 → 제한 1,000/일
- *   Naver     : 무료 25,000/일 → 제한 1,000/일
  */
 
-export type ApiService = 'gemini' | 'groq' | 'kakao' | 'naver'
+export type ApiService = 'gemini' | 'groq' | 'kakao'
 
 interface DailyLimit {
   limit: number
@@ -23,7 +22,6 @@ const DAILY_LIMITS: Record<ApiService, DailyLimit> = {
   gemini: { limit: 200,   freeLimit: 1_500,   label: 'Google Gemini' },
   groq:   { limit: 500,   freeLimit: 14_400,  label: 'Groq' },
   kakao:  { limit: 1_000, freeLimit: 300_000, label: 'Kakao Maps' },
-  naver:  { limit: 1_000, freeLimit: 25_000,  label: 'Naver Maps' },
 }
 
 interface DayCount {
@@ -34,7 +32,7 @@ interface DayCount {
 // 서버 인스턴스 내 메모리 유지 (재시작 시 초기화)
 const state: DayCount = {
   date: '',
-  counts: { gemini: 0, groq: 0, kakao: 0, naver: 0 },
+  counts: { gemini: 0, groq: 0, kakao: 0 },
 }
 
 function todayKST(): string {
@@ -50,7 +48,7 @@ function ensureToday() {
   const today = todayKST()
   if (state.date !== today) {
     state.date = today
-    state.counts = { gemini: 0, groq: 0, kakao: 0, naver: 0 }
+    state.counts = { gemini: 0, groq: 0, kakao: 0 }
   }
 }
 

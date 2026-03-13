@@ -1,12 +1,3 @@
-// 네이버 API에서 가져온 원본 장소 데이터
-export interface NaverPlaceInput {
-  title: string
-  category: string
-  address: string
-  roadAddress: string
-  link: string
-}
-
 // 베이지안 알고리즘으로 산출된 점수 요약
 export interface RestaurantDataSummary {
   estimated_review_count: number    // N: 추정 리뷰 수

@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
 import fs from 'fs'
 import path from 'path'
-import type { NaverPlaceInput, RecommendResponse } from '@/types/restaurant'
+import type { RecommendResponse } from '@/types/restaurant'
 import type { KakaoPlace } from '@/lib/kakao'
 import { checkUsage, recordUsage } from '@/lib/usageTracker'
 
@@ -88,28 +88,3 @@ ${placeList}
   return parseResponse(await generateText(userPrompt))
 }
 
-export async function analyzeWithGemini(
-  region: string,
-  places: NaverPlaceInput[]
-): Promise<RecommendResponse> {
-  const safeRegion = sanitizeRegion(region)
-  const placeList = places
-    .map((p, i) => `${i + 1}. ${p.title} (${p.category}) - ${p.roadAddress || p.address}`)
-    .join('\n')
-
-  const userPrompt = `대상 지역: ${safeRegion}
-
-네이버 지도에서 가져온 맛집 후보 목록:
-${placeList}
-
-위 목록을 알고리즘에 따라 분석하여 TOP 10을 선정하고 JSON 형식으로 반환해주세요.
-각 항목에 address와 naver_link 필드도 포함해주세요.`
-
-  return parseResponse(await generateText(userPrompt))
-}
-
-export async function analyzeWithGeminiOnly(region: string): Promise<RecommendResponse> {
-  const safeRegion = sanitizeRegion(region)
-  const userPrompt = `대상 지역: ${safeRegion}\n\n위 지역의 맛집 TOP 10을 알고리즘에 따라 분석하여 JSON 형식으로 추천해주세요. address와 naver_link 필드도 포함해주세요.`
-  return parseResponse(await generateText(userPrompt))
-}

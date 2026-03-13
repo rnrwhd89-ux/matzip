@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { searchNaverPlaces } from '@/lib/naver'
 import { searchKakaoPlaces } from '@/lib/kakao'
-import { analyzeWithKakao, analyzeWithGemini, analyzeWithGeminiOnly } from '@/lib/gemini'
+import { analyzeWithKakao } from '@/lib/gemini'
 import { checkUsage, recordUsage, getUsageSummary } from '@/lib/usageTracker'
 
 // In-memory rate limiter (per-instance, provides basic abuse protection)
@@ -77,45 +76,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const hasKakaoKey = !!process.env.KAKAO_REST_API_KEY
-    const hasNaverKey = !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET)
+    if (!process.env.KAKAO_REST_API_KEY) {
+      return NextResponse.json(
+        { error: '서비스 설정 오류가 발생했습니다. 관리자에게 문의해주세요.' },
+        { status: 503 }
+      )
+    }
 
-    // 지도 API 사용량 사전 체크
-    if (hasKakaoKey) {
-      const kakaoCheck = checkUsage('kakao')
-      if (!kakaoCheck.allowed) {
-        return NextResponse.json(
-          { error: '오늘의 Kakao Maps 사용 한도에 도달했습니다. 내일 다시 시도해주세요.' },
-          { status: 429 }
-        )
-      }
-    } else if (hasNaverKey) {
-      const naverCheck = checkUsage('naver')
-      if (!naverCheck.allowed) {
-        return NextResponse.json(
-          { error: '오늘의 Naver Maps 사용 한도에 도달했습니다. 내일 다시 시도해주세요.' },
-          { status: 429 }
-        )
-      }
+    // 카카오 API 사용량 사전 체크
+    const kakaoCheck = checkUsage('kakao')
+    if (!kakaoCheck.allowed) {
+      return NextResponse.json(
+        { error: '오늘의 Kakao Maps 사용 한도에 도달했습니다. 내일 다시 시도해주세요.' },
+        { status: 429 }
+      )
     }
 
     let data
     const warnings: string[] = []
 
-    if (hasKakaoKey) {
-      // 1순위: 카카오 API + AI 분석
-      recordUsage('kakao')
-      const places = await searchKakaoPlaces(region.trim())
-      data = await analyzeWithKakao(region.trim(), places)
-    } else if (hasNaverKey) {
-      // 2순위: 네이버 API + AI 분석
-      recordUsage('naver')
-      const places = await searchNaverPlaces(region.trim())
-      data = await analyzeWithGemini(region.trim(), places)
-    } else {
-      // 3순위: AI 단독 (fallback)
-      data = await analyzeWithGeminiOnly(region.trim())
-    }
+    recordUsage('kakao')
+    const places = await searchKakaoPlaces(region.trim())
+    data = await analyzeWithKakao(region.trim(), places)
 
     // 사용량 경고 수집 (80% 이상 시)
     const summary = getUsageSummary()
