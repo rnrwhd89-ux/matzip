@@ -54,18 +54,23 @@ async function generateText(userPrompt: string): Promise<string> {
     if (!groqCheck.allowed) {
       throw new Error(groqCheck.warningMessage ?? 'Groq 일일 한도 초과')
     }
-    recordUsage('groq')
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
-    const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0,
-      seed: 42,
-    })
-    return completion.choices[0]?.message?.content ?? ''
+    try {
+      recordUsage('groq')
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY, timeout: 15000 })
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0,
+        seed: 42,
+      })
+      return completion.choices[0]?.message?.content ?? ''
+    } catch (groqError) {
+      console.warn('Groq API 실패, Gemini로 fallback:', groqError)
+      // Gemini fallback으로 계속 진행
+    }
   }
 
   // Gemini fallback
