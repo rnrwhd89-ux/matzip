@@ -31,7 +31,8 @@ async function generateText(userPrompt: string): Promise<string> {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.3,
+      temperature: 0,
+      seed: 42,
     })
     return completion.choices[0]?.message?.content ?? ''
   }
@@ -43,6 +44,9 @@ async function generateText(userPrompt: string): Promise<string> {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: systemPrompt,
+    generationConfig: {
+      temperature: 0,
+    },
   })
   const result = await model.generateContent(userPrompt)
   return result.response.text()
