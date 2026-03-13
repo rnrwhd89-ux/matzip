@@ -72,6 +72,17 @@ function calcScore(R: number, N: number, k = 1.0): number {
 }
 
 // ─────────────────────────────────────────────
+// 하드 필터: 카카오맵 기준 N <= 50은 즉각 제외
+// (카카오맵은 네이버 대비 리뷰 수가 적어 N=50도 충분히 검증된 수준)
+// ─────────────────────────────────────────────
+
+const HARD_MIN_N = 50
+
+function isHardFiltered(r: Restaurant): boolean {
+  return r.N <= HARD_MIN_N
+}
+
+// ─────────────────────────────────────────────
 // 어뷰징 감지
 // - 프랜차이즈
 // - 동네 소규모 업종인데 리뷰 5,000개 이상 + 평점 4.9 이상
@@ -126,8 +137,12 @@ function run() {
     console.log(`\n📂 데이터 파일 로드: ${dataFile} (${data.length}개)`)
   }
 
-  // 점수 계산 및 정렬
-  const scored: ScoredRestaurant[] = data
+  // 하드 필터 적용 (N <= 50 즉각 제외)
+  const hardDropped = data.filter(r => isHardFiltered(r))
+  const passed      = data.filter(r => !isHardFiltered(r))
+
+  // 점수 계산 및 정렬 (하드 필터 통과한 것만)
+  const scored: ScoredRestaurant[] = passed
     .map(r => ({
       ...r,
       score: calcScore(r.R, r.N),
@@ -136,7 +151,7 @@ function run() {
     }))
     .sort((a, b) => b.score - a.score)
 
-  // 랭크 부여 (어뷰징 포함 전체 순위)
+  // 랭크 부여
   scored.forEach((r, i) => { r.rank = i + 1 })
 
   // 정상 식당만 필터 (Top 10 선정용)
@@ -146,9 +161,19 @@ function run() {
   console.log('\n' + '═'.repeat(72))
   console.log(`  ■ ${region} 통계(로그 페널티) 기반 맛집 분석 결과 ■`)
   console.log(`  알고리즘: S_final = R − k/log10(N+1)   [k=1.0]`)
+  console.log(`  하드 필터: N ≤ ${HARD_MIN_N} 즉각 제외 (카카오맵 기준)`)
   console.log('═'.repeat(72))
 
-  // ── 전체 테이블 ──
+  // ── 하드 필터 드롭 목록 ──
+  if (hardDropped.length > 0) {
+    console.log()
+    console.log(`  [하드 필터] N ≤ ${HARD_MIN_N} — ${hardDropped.length}개 즉각 제외`)
+    hardDropped.forEach(r => {
+      console.log(`   ✂️  ${r.name} (${r.category}) — N=${r.N}, R=${r.R}`)
+    })
+  }
+
+  // ── 전체 테이블 (하드 필터 통과 항목만) ──
   console.log()
   console.log(
     '  ' +
