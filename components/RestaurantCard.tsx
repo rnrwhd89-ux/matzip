@@ -53,7 +53,7 @@ export default function RestaurantCard({ restaurant }: { restaurant: Restaurant 
         </div>
         <div className="flex-shrink-0 text-right">
           <p className="text-[10px] text-gray-500">TrueScore</p>
-          <p className="text-[#FF6B6B] font-bold text-xl">{data_summary.bayesian_score.toFixed(2)}</p>
+          <p className="text-[#FF6B6B] font-bold text-xl">{data_summary.final_score.toFixed(2)}</p>
         </div>
       </div>
 
@@ -61,8 +61,6 @@ export default function RestaurantCard({ restaurant }: { restaurant: Restaurant 
       <div className="flex flex-wrap gap-2 mb-4">
         <ScoreBadge label="리뷰수(N)" value={data_summary.estimated_review_count} />
         <ScoreBadge label="평점(R)" value={data_summary.estimated_avg_rating} />
-        <ScoreBadge label="표준편차(σ)" value={data_summary.estimated_std_deviation} />
-        <ScoreBadge label="로컬지수(L)" value={(data_summary.local_index * 100).toFixed(0)} unit="%" />
       </div>
 
       {/* 알고리즘 통과 사유 */}
