@@ -11,7 +11,8 @@ import type { RecommendResponse } from '@/types/restaurant'
 // useSearchParams를 사용하는 모든 로직을 이 컴포넌트 안으로 격리
 function SearchContent() {
   const searchParams = useSearchParams()
-  const region = searchParams.get('q') ?? ''
+  // [VULN-08] URL 파라미터 XSS 방어: 허용 문자(한글·영문·숫자·공백·일부 특수문자)만 통과
+  const region = (searchParams.get('q') ?? '').replace(/[^\uAC00-\uD7A3a-zA-Z0-9\s\-,.]/g, '').trim()
 
   const [data, setData] = useState<RecommendResponse | null>(null)
   const [loading, setLoading] = useState(false)
