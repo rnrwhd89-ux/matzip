@@ -11,7 +11,7 @@ export default function LoadingState({ region }: { region: string }) {
         </p>
         <p className="text-gray-400 text-sm mt-2">베이즈 평균 알고리즘을 적용하고 있습니다</p>
       </div>
-      <div className="flex gap-2 mt-2">
+      <div className="flex flex-wrap justify-center gap-2 mt-2">
         {['베이즈 평균 계산', '표준편차 패널티 적용', '로컬 지수 분석'].map((step, i) => (
           <span
             key={step}

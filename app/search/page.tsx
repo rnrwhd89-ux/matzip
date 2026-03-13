@@ -43,7 +43,7 @@ function SearchContent() {
 
   if (!region) {
     return (
-      <div className="text-center py-24">
+      <div className="text-center py-12 md:py-24">
         <p className="text-gray-400">검색어를 입력해주세요.</p>
         <Link href="/" className="text-[#FF6B6B] underline text-sm mt-2 inline-block">
           홈으로 돌아가기
@@ -55,7 +55,7 @@ function SearchContent() {
   if (loading) {
     return (
       <>
-        <div className="mb-8 flex justify-center">
+        <div className="mb-5 md:mb-8 flex justify-center">
           <SearchForm defaultValue={region} />
         </div>
         <LoadingState region={region} />
@@ -66,10 +66,10 @@ function SearchContent() {
   if (error) {
     return (
       <>
-        <div className="mb-8 flex justify-center">
+        <div className="mb-5 md:mb-8 flex justify-center">
           <SearchForm defaultValue={region} />
         </div>
-        <div className="text-center py-16">
+        <div className="text-center py-10 md:py-16">
           <p className="text-[#FF6B6B] text-lg font-semibold mb-2">오류가 발생했습니다</p>
           <p className="text-gray-400 text-sm mb-6">{error}</p>
           <Link
@@ -110,7 +110,7 @@ export default function SearchPage() {
       </nav>
 
       {/* 결과 — useSearchParams는 Suspense 내부에서만 사용 */}
-      <section className="flex-1 px-6 py-10">
+      <section className="flex-1 px-4 md:px-6 py-6 md:py-10">
         <Suspense fallback={<LoadingState region="" />}>
           <SearchContent />
         </Suspense>
