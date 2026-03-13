@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { searchNaverPlaces } from '@/lib/naver'
 import { searchKakaoPlaces } from '@/lib/kakao'
 import { analyzeWithKakao, analyzeWithGemini, analyzeWithGeminiOnly } from '@/lib/gemini'
+import { checkUsage, recordUsage, getUsageSummary } from '@/lib/usageTracker'
 
 // In-memory rate limiter (per-instance, provides basic abuse protection)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -79,26 +80,67 @@ export async function POST(request: NextRequest) {
     const hasKakaoKey = !!process.env.KAKAO_REST_API_KEY
     const hasNaverKey = !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET)
 
-    let data
+    // 지도 API 사용량 사전 체크
     if (hasKakaoKey) {
-      // 1순위: 카카오 API + Gemini 분석
+      const kakaoCheck = checkUsage('kakao')
+      if (!kakaoCheck.allowed) {
+        return NextResponse.json(
+          { error: '오늘의 Kakao Maps 사용 한도에 도달했습니다. 내일 다시 시도해주세요.' },
+          { status: 429 }
+        )
+      }
+    } else if (hasNaverKey) {
+      const naverCheck = checkUsage('naver')
+      if (!naverCheck.allowed) {
+        return NextResponse.json(
+          { error: '오늘의 Naver Maps 사용 한도에 도달했습니다. 내일 다시 시도해주세요.' },
+          { status: 429 }
+        )
+      }
+    }
+
+    let data
+    const warnings: string[] = []
+
+    if (hasKakaoKey) {
+      // 1순위: 카카오 API + AI 분석
+      recordUsage('kakao')
       const places = await searchKakaoPlaces(region.trim())
       data = await analyzeWithKakao(region.trim(), places)
     } else if (hasNaverKey) {
-      // 2순위: 네이버 API + Gemini 분석
+      // 2순위: 네이버 API + AI 분석
+      recordUsage('naver')
       const places = await searchNaverPlaces(region.trim())
       data = await analyzeWithGemini(region.trim(), places)
     } else {
-      // 3순위: Gemini 단독 (fallback)
+      // 3순위: AI 단독 (fallback)
       data = await analyzeWithGeminiOnly(region.trim())
     }
 
-    return NextResponse.json(data, {
+    // 사용량 경고 수집 (80% 이상 시)
+    const summary = getUsageSummary()
+    for (const [, info] of Object.entries(summary)) {
+      const ratio = info.used / info.limit
+      if (ratio >= 0.8) {
+        warnings.push(`API 사용량 경고: ${info.used}/${info.limit}회 사용됨`)
+      }
+    }
+
+    const responseBody = warnings.length > 0 ? { ...data, _warnings: warnings } : data
+
+    return NextResponse.json(responseBody, {
       headers: { 'X-RateLimit-Remaining': String(remaining) },
     })
   } catch (error) {
     // [VULN-01] 내부 에러 상세 정보 서버 로그에만 기록, 클라이언트에는 노출 안 함
     console.error('[Recommend API Error]', error)
+
+    // 한도 초과 에러는 사용자에게 명확히 전달
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('일일 한도')) {
+      return NextResponse.json({ error: message }, { status: 429 })
+    }
+
     return NextResponse.json(
       { error: '서비스 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
       { status: 500 }

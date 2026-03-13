@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import type { NaverPlaceInput, RecommendResponse } from '@/types/restaurant'
 import type { KakaoPlace } from '@/lib/kakao'
+import { checkUsage, recordUsage } from '@/lib/usageTracker'
 
 function getAlgorithmPrompt(): string {
   const mdPath = path.join(process.cwd(), 'docs', 'algorithm.md')
@@ -33,6 +34,11 @@ async function generateText(userPrompt: string): Promise<string> {
 
   // GROQ_API_KEY 있으면 Groq 사용, 없으면 Gemini 사용
   if (process.env.GROQ_API_KEY) {
+    const groqCheck = checkUsage('groq')
+    if (!groqCheck.allowed) {
+      throw new Error(groqCheck.warningMessage ?? 'Groq 일일 한도 초과')
+    }
+    recordUsage('groq')
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
@@ -48,6 +54,11 @@ async function generateText(userPrompt: string): Promise<string> {
   // Gemini fallback
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY 또는 GROQ_API_KEY 환경변수가 설정되지 않았습니다.')
+  const geminiCheck = checkUsage('gemini')
+  if (!geminiCheck.allowed) {
+    throw new Error(geminiCheck.warningMessage ?? 'Gemini 일일 한도 초과')
+  }
+  recordUsage('gemini')
   const genAI = new GoogleGenerativeAI(apiKey)
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
