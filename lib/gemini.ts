@@ -29,6 +29,22 @@ function parseResponse(text: string): RecommendResponse {
   }
 }
 
+function normalizeName(name: string): string {
+  return name.replace(/\s+/g, '').replace(/[^\w가-힣]/g, '').toLowerCase()
+}
+
+function filterToValidPlaces(
+  response: RecommendResponse,
+  validNames: string[]
+): RecommendResponse {
+  const normalizedValid = new Set(validNames.map(normalizeName))
+  const filtered = response.restaurants.filter(r =>
+    normalizedValid.has(normalizeName(r.name))
+  )
+  const reranked = filtered.map((r, i) => ({ ...r, rank: i + 1 }))
+  return { ...response, restaurants: reranked }
+}
+
 async function generateText(userPrompt: string): Promise<string> {
   const systemPrompt = getAlgorithmPrompt()
 
@@ -46,7 +62,8 @@ async function generateText(userPrompt: string): Promise<string> {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.3,
+      temperature: 0,
+      seed: 42,
     })
     return completion.choices[0]?.message?.content ?? ''
   }
@@ -63,6 +80,9 @@ async function generateText(userPrompt: string): Promise<string> {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: systemPrompt,
+    generationConfig: {
+      temperature: 0,
+    },
   })
   const result = await model.generateContent(userPrompt)
   return result.response.text()
@@ -82,9 +102,12 @@ export async function analyzeWithKakao(
 카카오 지도에서 가져온 맛집 후보 목록:
 ${placeList}
 
-위 목록을 알고리즘에 따라 분석하여 TOP 10을 선정하고 JSON 형식으로 반환해주세요.
+위 목록에 있는 식당 중에서만 알고리즘에 따라 분석하여 TOP 10을 선정하고 JSON 형식으로 반환해주세요.
+반드시 위에 나열된 식당 이름만 사용하고, 목록에 없는 새 식당을 추가하거나 이름을 변형하는 것은 절대 금지입니다.
 각 항목의 address는 실제 주소를, naver_link는 카카오맵 place_url을 사용해주세요.`
 
-  return parseResponse(await generateText(userPrompt))
+  const result = parseResponse(await generateText(userPrompt))
+  const validNames = places.map(p => p.place_name)
+  return filterToValidPlaces(result, validNames)
 }
 
