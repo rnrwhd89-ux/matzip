@@ -7,14 +7,12 @@ export interface NaverPlaceInput {
   link: string
 }
 
-// 베이지안 알고리즘으로 산출된 점수 요약
+// 로그 페널티 알고리즘으로 산출된 점수 요약
+// S_final = R - k / log10(N+1)
 export interface RestaurantDataSummary {
   estimated_review_count: number    // N: 추정 리뷰 수
-  estimated_avg_rating: number      // R: 평균 평점 (0~5)
-  estimated_std_deviation: number   // σ: 표준편차
-  region_avg_rating: number         // m: 지역 평균 평점
-  local_index: number               // L: 현지인 비율 (0~1)
-  bayesian_score: number            // S_opt: 최종 알고리즘 점수
+  estimated_avg_rating: number      // R: 표면 평균 평점 (0~5)
+  final_score: number               // S_final: 신뢰도 할인 적용 최종 점수
 }
 
 export interface Restaurant {
