@@ -119,8 +119,11 @@ export async function POST(request: NextRequest) {
 
     // 한도 초과 에러는 사용자에게 명확히 전달
     const message = error instanceof Error ? error.message : ''
-    if (message.includes('일일 한도')) {
-      return NextResponse.json({ error: message }, { status: 429 })
+    if (message.includes('일일 한도') || message === 'KAKAO_QUOTA_EXCEEDED') {
+      return NextResponse.json(
+        { error: '카카오 API 일일 사용량이 초과되었습니다. 내일 다시 시도해주세요.' },
+        { status: 429 }
+      )
     }
 
     return NextResponse.json(

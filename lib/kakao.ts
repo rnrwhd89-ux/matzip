@@ -39,6 +39,9 @@ export async function searchKakaoPlaces(query: string, size = 15): Promise<Kakao
 
   if (!res.ok) {
     const text = await res.text()
+    if (res.status === 429) {
+      throw new Error('KAKAO_QUOTA_EXCEEDED')
+    }
     throw new Error(`카카오 API 오류 (${res.status}): ${text}`)
   }
 
